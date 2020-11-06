@@ -3,5 +3,6 @@
 *.iml
 *.launch
 war/WEB-INF/classes/*
+war/WEB-INF/deploy/*
 war/stockwatcher/*
 gwt-unitCache/*
