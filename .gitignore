@@ -1,0 +1,7 @@
+.classpath
+.project
+*.iml
+*.launch
+war/WEB-INF/classes/*
+war/stockwatcher/*
+gwt-unitCache/*
