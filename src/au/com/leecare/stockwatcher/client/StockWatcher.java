@@ -1,17 +1,18 @@
 package au.com.leecare.stockwatcher.client;
 
-import au.com.leecare.stockwatcher.shared.FieldVerifier;
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
+
 import com.google.gwt.event.dom.client.*;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+
 import com.google.gwt.user.client.ui.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /** Entry point For StockWatcher */
@@ -142,5 +143,10 @@ public class StockWatcher implements EntryPoint {
       stocksFlexTable.setText(row, 1, priceText);
       stocksFlexTable.setText(row, 2, changeText + " (" + changePercentText + "%)");
     }
+    ;
+
+    DateTimeFormat dateFormat =
+        DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
+    lastUpdatedLabel.setText("Last update : " + dateFormat.format(new Date()));
   }
 }

@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.9.0//EN"
   "http://gwtproject.org/doctype/2.9.0/gwt-module.dtd">
+
 <module rename-to='stockwatcher'>
-  <inherits name='com.google.gwt.user.User'/>
 
-  <inherits name='com.google.gwt.user.theme.clean.Clean'/>
-  <!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
+	<inherits name='com.google.gwt.user.User' />
 
-  <entry-point class='au.com.leecare.stockwatcher.client.StockWatcher'/>
+	<inherits name='com.google.gwt.user.theme.clean.Clean' />
 
-  <source path='client'/>
-  <source path='shared'/>
+	<entry-point
+		class='au.com.leecare.stockwatcher.client.StockWatcher' />
 
-  <!-- allow Super Dev Mode -->
-  <add-linker name="xsiframe"/>
+	<source path='client' />
+	<source path='shared' />
+
+	<!-- allow Super Dev Mode -->
+	<add-linker name="xsiframe" />
+
 </module>
