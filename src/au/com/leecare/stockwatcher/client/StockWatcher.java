@@ -1,7 +1,7 @@
 package au.com.leecare.stockwatcher.client;
 
 import com.google.gwt.core.client.EntryPoint;
-
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -23,24 +23,26 @@ public class StockWatcher implements EntryPoint {
   private TextBox newSymbolTextBox = new TextBox();
   private Button addStockButton = new Button("Add");
   private Label lastUpdatedLabel = new Label();
-  private List<String> stocks = new ArrayList<>();
+  private List<String> symbols = new ArrayList<>();
 
+  private List<String> stocks = new ArrayList<String>();
+  private static final StockWatcherConstants constants = GWT.create(StockWatcherConstants.class);
+  private static final StockWatcherMessages messages = GWT.create(StockWatcherMessages.class);
+  
   private static final int STOCK_SYMBAL_COLUMN = 0;
   private static final int STOCK_PRICE_COLUMN = 1;
   private static final int STOCK_CHANGE_COLUMN = 2;
   private static final int STOCK_REMOVE_COLUMN = 3;
-
   private static final int REMOVE_BUTTON_COLUMN = 3;
-
   private static final int REFRESH_INTERVAL = 1_000;
 
   /** Entry point method. */
   public void onModuleLoad() {
     // Create table for stock data.
-    stocksFlexTable.setText(0, STOCK_SYMBAL_COLUMN, "Symbol");
-    stocksFlexTable.setText(0, STOCK_PRICE_COLUMN, "Price");
-    stocksFlexTable.setText(0, STOCK_CHANGE_COLUMN, "Change");
-    stocksFlexTable.setText(0, STOCK_REMOVE_COLUMN, "Remove");
+    stocksFlexTable.setText(0, STOCK_SYMBAL_COLUMN, constants.symbol());
+    stocksFlexTable.setText(0, STOCK_PRICE_COLUMN, constants.price());
+    stocksFlexTable.setText(0, STOCK_CHANGE_COLUMN, constants.change());
+    stocksFlexTable.setText(0, STOCK_REMOVE_COLUMN, constants.remove());
 
     stocksFlexTable.getRowFormatter().addStyleName(0, "watchListHeader");
     stocksFlexTable.addStyleName("watchList");
@@ -97,14 +99,14 @@ public class StockWatcher implements EntryPoint {
     newSymbolTextBox.setFocus(true);
 
     if (!newStock.matches("^[0-9A-Z\\\\.]{1,10}$")) {
-      Window.alert("'" + newStock + "' is not a valid symbol.");
+      Window.alert(messages.invalidSymbol(newStock));
       newSymbolTextBox.selectAll();
     }
 
-    if (stocks.contains(newStock)) return;
+    if (symbols.contains(newStock)) return;
 
     int row = stocksFlexTable.getRowCount();
-    stocks.add(newStock);
+    symbols.add(newStock);
     stocksFlexTable.setText(row, STOCK_SYMBAL_COLUMN, newStock);
     stocksFlexTable.setWidget(row, 2, new Label());
     stocksFlexTable
@@ -123,8 +125,8 @@ public class StockWatcher implements EntryPoint {
         new ClickHandler() {
           @Override
           public void onClick(ClickEvent clickEvent) {
-            int removedIndex = stocks.indexOf(newStock);
-            stocks.remove(removedIndex);
+            int removedIndex = symbols.indexOf(newStock);
+            symbols.remove(removedIndex);
             stocksFlexTable.removeRow(removedIndex + 1);
           }
         });
@@ -137,11 +139,11 @@ public class StockWatcher implements EntryPoint {
         new Timer() {
           @Override
           public void run() {
-            final double MAX_PRICE = 100.0; // $100.00
-            final double MAX_PRICE_CHANGE = 0.02; // +/- 2%
+            final double MAX_PRICE = 100.0;
+            final double MAX_PRICE_CHANGE = 0.02;
 
             List<StockPrice> prices = new ArrayList<>();
-            for (String stock : stocks) {
+            for (String stock : symbols) {
               double price = Random.nextDouble() * MAX_PRICE;
               double change = price * MAX_PRICE_CHANGE * (Random.nextDouble() * 2.0 - 1.0);
 
@@ -157,11 +159,11 @@ public class StockWatcher implements EntryPoint {
 
   private void updateStockPrice(List<StockPrice> prices) {
     for (StockPrice stockPrice : prices) {
-      if (!stocks.contains(stockPrice.getSymbol())) {
+      if (!symbols.contains(stockPrice.getSymbol())) {
         return;
       }
 
-      int row = stocks.indexOf(stockPrice.getSymbol()) + 1;
+      int row = symbols.indexOf(stockPrice.getSymbol()) + 1;
 
       // Format the data in the Price and Change fields.
       String priceText = NumberFormat.getFormat("#,##0.00").format(stockPrice.getPrice());
@@ -187,8 +189,6 @@ public class StockWatcher implements EntryPoint {
     }
     ;
 
-    DateTimeFormat dateFormat =
-        DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-    lastUpdatedLabel.setText("Last update : " + dateFormat.format(new Date()));
+    lastUpdatedLabel.setText(messages.lastUpdate(new Date()));
   }
 }

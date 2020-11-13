@@ -3,21 +3,21 @@ package au.com.leecare.stockwatcher.client;
 import com.google.gwt.i18n.client.Constants;
 
 public interface StockWatcherConstants extends Constants {
-	@DefaultStringValue("StockWatcher")
-    String stockWatcher();
+  @DefaultStringValue("StockWatcher")
+  String stockWatcher();
 
-    @DefaultStringValue("Symbol")
-    String symbol();
+  @DefaultStringValue("Symbol")
+  String symbol();
 
-    @DefaultStringValue("Price")
-    String price();
+  @DefaultStringValue("Price")
+  String price();
 
-    @DefaultStringValue("Change")
-    String change();
+  @DefaultStringValue("Change")
+  String change();
 
-    @DefaultStringValue("Remove")
-    String remove();
+  @DefaultStringValue("Remove")
+  String remove();
 
-    @DefaultStringValue("Add")
-    String add();
+  @DefaultStringValue("Add")
+  String add();
 }
