@@ -1,19 +1,27 @@
 package au.com.leecare.stockwatcher.client;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-
-import com.google.gwt.user.client.ui.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /** Entry point For StockWatcher */
 public class StockWatcher implements EntryPoint {
@@ -25,7 +33,6 @@ public class StockWatcher implements EntryPoint {
   private Label lastUpdatedLabel = new Label();
   private List<String> symbols = new ArrayList<>();
 
-  private List<String> stocks = new ArrayList<String>();
   private static final StockWatcherConstants constants = GWT.create(StockWatcherConstants.class);
   private static final StockWatcherMessages messages = GWT.create(StockWatcherMessages.class);
 
