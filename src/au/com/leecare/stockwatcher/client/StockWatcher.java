@@ -28,7 +28,7 @@ public class StockWatcher implements EntryPoint {
   private List<String> stocks = new ArrayList<String>();
   private static final StockWatcherConstants constants = GWT.create(StockWatcherConstants.class);
   private static final StockWatcherMessages messages = GWT.create(StockWatcherMessages.class);
-  
+
   private static final int STOCK_SYMBAL_COLUMN = 0;
   private static final int STOCK_PRICE_COLUMN = 1;
   private static final int STOCK_CHANGE_COLUMN = 2;
