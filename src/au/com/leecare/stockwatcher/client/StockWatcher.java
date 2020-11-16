@@ -194,7 +194,6 @@ public class StockWatcher implements EntryPoint {
 
       changeWidget.setStyleName(changeStyleName);
     }
-    ;
 
     lastUpdatedLabel.setText(messages.lastUpdate(new Date()));
   }

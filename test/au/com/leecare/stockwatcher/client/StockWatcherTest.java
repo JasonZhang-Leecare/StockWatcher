@@ -1,4 +1,4 @@
-package au.com.leecare.stockwatcher.test;
+package au.com.leecare.stockwatcher.client;
 
 import com.google.gwt.junit.client.GWTTestCase;
 
@@ -6,10 +6,10 @@ public class StockWatcherTest extends GWTTestCase {
 
   @Override
   public String getModuleName() {
-    return "com.google.gwt.sample.stockwatcher.StockWatcher";
+    return "au.com.leecare.stockwatcher.StockWatcher";
   }
 
-  public void testSimple() {
+  public void testStock() {
     assertTrue(true);
   }
 }

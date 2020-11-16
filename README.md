@@ -9,11 +9,11 @@ Run in Dev Mode
 	                 http://127.0.0.1:8888/StockWatcher.html&locale=de
 
 Run in Production 
-	- ant build
-    - then copy war/ into {tomcat}/webapp/stockwatcher
+	- ant war
+    - then copy StockWatcher.war to {tomcat}/webapp/
 	- start tomcat
-
+	- access browser {}:9008/StockWatcher
 
 # How to test
-Not supported by far
+Right click on the Test Class and 'Run As -> GWT Junit Test'
 
