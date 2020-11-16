@@ -1,147 +1,200 @@
 package au.com.leecare.stockwatcher.client;
 
-import au.com.leecare.stockwatcher.shared.FieldVerifier;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-/**
- * Entry point classes define <code>onModuleLoad()</code>.
- */
+/** Entry point For StockWatcher */
 public class StockWatcher implements EntryPoint {
-  /**
-   * The message displayed to the user when the server cannot be reached or
-   * returns an error.
-   */
-  private static final String SERVER_ERROR = "An error occurred while "
-      + "attempting to contact the server. Please check your network "
-      + "connection and try again.";
+  private VerticalPanel mainPanel = new VerticalPanel();
+  private FlexTable stocksFlexTable = new FlexTable();
+  private HorizontalPanel addPanel = new HorizontalPanel();
+  private TextBox newSymbolTextBox = new TextBox();
+  private Button addStockButton = new Button("Add");
+  private Label lastUpdatedLabel = new Label();
+  private List<String> symbols = new ArrayList<>();
 
-  /**
-   * Create a remote service proxy to talk to the server-side Greeting service.
-   */
-  private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
+  private static final StockWatcherConstants constants = GWT.create(StockWatcherConstants.class);
+  private static final StockWatcherMessages messages = GWT.create(StockWatcherMessages.class);
 
-  /**
-   * This is the entry point method.
-   */
+  private static final int STOCK_SYMBAL_COLUMN = 0;
+  private static final int STOCK_PRICE_COLUMN = 1;
+  private static final int STOCK_CHANGE_COLUMN = 2;
+  private static final int STOCK_REMOVE_COLUMN = 3;
+  private static final int REMOVE_BUTTON_COLUMN = 3;
+  private static final int REFRESH_INTERVAL = 1_000;
+
+  /** Entry point method. */
   public void onModuleLoad() {
-    final Button sendButton = new Button("Send");
-    final TextBox nameField = new TextBox();
-    nameField.setText("GWT User");
-    final Label errorLabel = new Label();
+    // Create table for stock data.
+    stocksFlexTable.setText(0, STOCK_SYMBAL_COLUMN, constants.symbol());
+    stocksFlexTable.setText(0, STOCK_PRICE_COLUMN, constants.price());
+    stocksFlexTable.setText(0, STOCK_CHANGE_COLUMN, constants.change());
+    stocksFlexTable.setText(0, STOCK_REMOVE_COLUMN, constants.remove());
 
-    // We can add style names to widgets
-    sendButton.addStyleName("sendButton");
+    stocksFlexTable.getRowFormatter().addStyleName(0, "watchListHeader");
+    stocksFlexTable.addStyleName("watchList");
 
-    // Add the nameField and sendButton to the RootPanel
-    // Use RootPanel.get() to get the entire body element
-    RootPanel.get("nameFieldContainer").add(nameField);
-    RootPanel.get("sendButtonContainer").add(sendButton);
-    RootPanel.get("errorLabelContainer").add(errorLabel);
+    stocksFlexTable
+        .getCellFormatter()
+        .addStyleName(0, STOCK_PRICE_COLUMN, "watchListNumericColumn");
+    stocksFlexTable
+        .getCellFormatter()
+        .addStyleName(0, STOCK_CHANGE_COLUMN, "watchListNumericColumn");
+    stocksFlexTable
+        .getCellFormatter()
+        .addStyleName(0, STOCK_REMOVE_COLUMN, "watchListRemoveColumn");
 
-    // Focus the cursor on the name field when the app loads
-    nameField.setFocus(true);
-    nameField.selectAll();
+    // Assemble Add Stock panel.
+    addPanel.add(newSymbolTextBox);
+    addPanel.add(addStockButton);
+    addPanel.addStyleName("addPanel");
 
-    // Create the popup dialog box
-    final DialogBox dialogBox = new DialogBox();
-    dialogBox.setText("Remote Procedure Call");
-    dialogBox.setAnimationEnabled(true);
-    final Button closeButton = new Button("Close");
-    // We can set the id of a widget by accessing its Element
-    closeButton.getElement().setId("closeButton");
-    final Label textToServerLabel = new Label();
-    final HTML serverResponseLabel = new HTML();
-    VerticalPanel dialogVPanel = new VerticalPanel();
-    dialogVPanel.addStyleName("dialogVPanel");
-    dialogVPanel.add(new HTML("<b>Sending name to the server:</b>"));
-    dialogVPanel.add(textToServerLabel);
-    dialogVPanel.add(new HTML("<br><b>Server replies:</b>"));
-    dialogVPanel.add(serverResponseLabel);
-    dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
-    dialogVPanel.add(closeButton);
-    dialogBox.setWidget(dialogVPanel);
+    // Assemble Main panel.
+    mainPanel.add(stocksFlexTable);
+    mainPanel.add(addPanel);
+    mainPanel.add(lastUpdatedLabel);
 
-    // Add a handler to close the DialogBox
-    closeButton.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent event) {
-        dialogBox.hide();
-        sendButton.setEnabled(true);
-        sendButton.setFocus(true);
-      }
-    });
+    // Associate the Main panel with the HTML host page.
+    RootPanel.get("stockList").add(mainPanel);
 
-    // Create a handler for the sendButton and nameField
-    class MyHandler implements ClickHandler, KeyUpHandler {
-      /**
-       * Fired when the user clicks on the sendButton.
-       */
-      public void onClick(ClickEvent event) {
-        sendNameToServer();
-      }
+    newSymbolTextBox.setFocus(true);
 
-      /**
-       * Fired when the user types in the nameField.
-       */
-      public void onKeyUp(KeyUpEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          sendNameToServer();
-        }
-      }
+    refreshStockTablePeriodically();
 
-      /**
-       * Send the name from the nameField to the server and wait for a response.
-       */
-      private void sendNameToServer() {
-        // First, we validate the input.
-        errorLabel.setText("");
-        String textToServer = nameField.getText();
-        if (!FieldVerifier.isValidName(textToServer)) {
-          errorLabel.setText("Please enter at least four characters");
-          return;
-        }
-        
-        // Then, we send the input to the server.
-        sendButton.setEnabled(false);
-        textToServerLabel.setText(textToServer);
-        serverResponseLabel.setText("");
-        greetingService.greetServer(textToServer, new AsyncCallback<String>() {
-          public void onFailure(Throwable caught) {
-            // Show the RPC error message to the user
-            dialogBox.setText("Remote Procedure Call - Failure");
-            serverResponseLabel.addStyleName("serverResponseLabelError");
-            serverResponseLabel.setHTML(SERVER_ERROR);
-            dialogBox.center();
-            closeButton.setFocus(true);
-          }
-
-          public void onSuccess(String result) {
-            dialogBox.setText("Remote Procedure Call");
-            serverResponseLabel.removeStyleName("serverResponseLabelError");
-            serverResponseLabel.setHTML(result);
-            dialogBox.center();
-            closeButton.setFocus(true);
+    addStockButton.addClickHandler(
+        new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent clickEvent) {
+            addStock();
           }
         });
-      }
+
+    newSymbolTextBox.addKeyDownHandler(
+        new KeyDownHandler() {
+          @Override
+          public void onKeyDown(KeyDownEvent keyDownEvent) {
+            if (keyDownEvent.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+              addStock();
+            }
+          }
+        });
+  }
+
+  private void addStock() {
+    final String newStock = newSymbolTextBox.getText().toUpperCase().trim();
+    newSymbolTextBox.setText("");
+    newSymbolTextBox.setFocus(true);
+
+    if (!newStock.matches("^[0-9A-Z\\\\.]{1,10}$")) {
+      Window.alert(messages.invalidSymbol(newStock));
+      newSymbolTextBox.selectAll();
     }
 
-    // Add a handler to send the name to the server
-    MyHandler handler = new MyHandler();
-    sendButton.addClickHandler(handler);
-    nameField.addKeyUpHandler(handler);
+    if (symbols.contains(newStock)) return;
+
+    int row = stocksFlexTable.getRowCount();
+    symbols.add(newStock);
+    stocksFlexTable.setText(row, STOCK_SYMBAL_COLUMN, newStock);
+    stocksFlexTable.setWidget(row, 2, new Label());
+    stocksFlexTable
+        .getCellFormatter()
+        .addStyleName(row, STOCK_PRICE_COLUMN, "watchListNumericColumn");
+    stocksFlexTable
+        .getCellFormatter()
+        .addStyleName(row, STOCK_PRICE_COLUMN, "watchListNumericColumn");
+    stocksFlexTable
+        .getCellFormatter()
+        .addStyleName(row, STOCK_REMOVE_COLUMN, "watchListRemoveColumn");
+
+    Button removeButton = new Button("x");
+    removeButton.addStyleDependentName("remove");
+    removeButton.addClickHandler(
+        new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent clickEvent) {
+            int removedIndex = symbols.indexOf(newStock);
+            symbols.remove(removedIndex);
+            stocksFlexTable.removeRow(removedIndex + 1);
+          }
+        });
+    stocksFlexTable.setWidget(row, REMOVE_BUTTON_COLUMN, removeButton);
+  }
+
+  private void refreshStockTablePeriodically() {
+
+    Timer refreshTimer =
+        new Timer() {
+          @Override
+          public void run() {
+            final double MAX_PRICE = 100.0;
+            final double MAX_PRICE_CHANGE = 0.02;
+
+            List<StockPrice> prices = new ArrayList<>();
+            for (String stock : symbols) {
+              double price = Random.nextDouble() * MAX_PRICE;
+              double change = price * MAX_PRICE_CHANGE * (Random.nextDouble() * 2.0 - 1.0);
+
+              prices.add(new StockPrice(stock, price, change));
+            }
+
+            updateStockPrice(prices);
+          }
+        };
+
+    refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
+  }
+
+  private void updateStockPrice(List<StockPrice> prices) {
+    for (StockPrice stockPrice : prices) {
+      if (!symbols.contains(stockPrice.getSymbol())) {
+        return;
+      }
+
+      int row = symbols.indexOf(stockPrice.getSymbol()) + 1;
+
+      // Format the data in the Price and Change fields.
+      String priceText = NumberFormat.getFormat("#,##0.00").format(stockPrice.getPrice());
+      NumberFormat changeFormat = NumberFormat.getFormat("+#,##0.00;-#,##0.00");
+      String changeText = changeFormat.format(stockPrice.getChange());
+      String changePercentText = changeFormat.format(stockPrice.getChangePercent());
+
+      // Populate the Price and Change fields with new data.
+      stocksFlexTable.setText(row, STOCK_PRICE_COLUMN, priceText);
+
+      Label changeWidget = (Label) stocksFlexTable.getWidget(row, STOCK_CHANGE_COLUMN);
+      changeWidget.setText(changeText + " (" + changePercentText + "%)");
+
+      // Change the color of text in the Change field based on its value.
+      String changeStyleName = "noChange";
+      if (stockPrice.getChangePercent() < -0.1f) {
+        changeStyleName = "negativeChange";
+      } else if (stockPrice.getChangePercent() > 0.1f) {
+        changeStyleName = "positiveChange";
+      }
+
+      changeWidget.setStyleName(changeStyleName);
+    }
+
+    lastUpdatedLabel.setText(messages.lastUpdate(new Date()));
   }
 }
