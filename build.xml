@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <project name="StockWatcher" default="build" basedir=".">
-	<!-- Arguments to gwtc and devmode targets -->
-	<property name="gwt.args" value="" />
 
-	<!-- Configure path to GWT SDK -->
 	<property name="gwt.sdk" location="C:/Projects/StockWatcher/lib" />
 
-	<path id="project.class.path">
+	<path id="project.classpath">
 		<pathelement location="war/WEB-INF/classes" />
 		<pathelement location="${gwt.sdk}/gwt-user.jar" />
 		<pathelement location="${gwt.sdk}/gwt-dev.jar" />
 		<pathelement location="${gwt.sdk}/validation-api-1.0.0.GA.jar" />
 		<pathelement location="${gwt.sdk}/validation-api-1.0.0.GA-sources.jar" />
 		<fileset dir="war/WEB-INF/lib" includes="**/*.jar" />
-		<!-- Add any additional non-server libs (such as JUnit) here -->
 	</path>
 
 	<target name="libs" description="Copy libs to WEB-INF/lib">
 		<mkdir dir="war/WEB-INF/lib" />
 		<copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet.jar" />
 		<copy todir="war/WEB-INF/lib" file="${gwt.sdk}/gwt-servlet-deps.jar" />
-		<!-- Add any additional server libs that need to be copied -->
 	</target>
 
 	<target name="javac" depends="libs" description="Compile java source to bytecode">
 		<mkdir dir="war/WEB-INF/classes" />
-		<javac srcdir="src" includes="**" encoding="utf-8" destdir="war/WEB-INF/classes" source="1.7" target="1.7" nowarn="true" debug="true" debuglevel="lines,vars,source">
-			<classpath refid="project.class.path" />
+		<javac srcdir="src" includes="**" encoding="utf-8" destdir="war/WEB-INF/classes" source="1.8" target="1.8" nowarn="true" debug="true" debuglevel="lines,vars,source">
+			<classpath refid="project.classpath" />
 		</javac>
 		<copy todir="war/WEB-INF/classes">
 			<fileset dir="src" excludes="**/*.java" />
@@ -34,15 +29,13 @@
 	</target>
 
 	<target name="gwtc" depends="javac" description="GWT compile to JavaScript (production mode)">
-		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" maxmemory="512m">
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler" maxmemory="1g">
 			<classpath>
 				<pathelement location="src" />
-				<path refid="project.class.path" />
+				<path refid="project.classpath" />
 			</classpath>
 			<arg line="-war" />
 			<arg value="war" />
-			<!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
-			<arg line="${gwt.args}" />
 			<arg value="au.com.leecare.stockwatcher.StockWatcher" />
 		</java>
 	</target>
@@ -51,20 +44,17 @@
 		<java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode" maxmemory="1g">
 			<classpath>
 				<pathelement location="src" />
-				<path refid="project.class.path" />
+				<path refid="project.classpath" />
 				<pathelement location="${gwt.sdk}/gwt-codeserver.jar" />
 			</classpath>
 			<arg value="-startupUrl" />
 			<arg value="StockWatcher.html" />
 			<arg line="-war" />
 			<arg value="war" />
-			<!-- Additional arguments like -style PRETTY, -logLevel DEBUG or -nosuperDevMode -->
-			<arg line="${gwt.args}" />
 			<arg value="au.com.leecare.stockwatcher.StockWatcher" />
 			<arg value="au.com.leecare.stockwatcher.StockWatcher" />
 		</java>
 	</target>
-
 
 	<target name="build" depends="gwtc" description="Build this project" />
 
@@ -75,12 +65,16 @@
 	<target name="clean" description="Cleans this project">
 		<delete dir="war/WEB-INF/classes" failonerror="false" />
 		<delete dir="war/stockwatcher" failonerror="false" />
+		<delete file="StockWatcher.war" failonerror="false" />
+		<delete dir="www-test" failonerror="false" />
+		<delete dir="htmlunit.dev" failonerror="false" />
+		<delete dir="reports" failonerror="false" />
 	</target>
 
 	<target name="javac.tests" depends="javac" description="Compiles test code">
 		<javac srcdir="test" includes="**" encoding="utf-8" source="1.8" target="1.8" nowarn="true" destdir="war/WEB-INF/classes" debug="true" debuglevel="lines,vars,source">
 			<classpath location="${gwt.sdk}/junit-4.12.jar" />
-			<classpath refid="project.class.path" />
+			<classpath refid="project.classpath" />
 		</javac>
 	</target>
 
@@ -92,7 +86,7 @@
 			<classpath>
 				<pathelement location="src" />
 				<pathelement location="test" />
-				<path refid="project.class.path" />
+				<path refid="project.classpath" />
 				<pathelement location="./lib/validation-api-1.0.0.GA.jar" />
 				<pathelement location="./lib/validation-api-1.0.0.GA-sources.jar" />
 				<pathelement location="${gwt.sdk}/junit-4.12.jar" />
